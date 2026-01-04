@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Ell</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* =====================================================
+GLOBAL
+===================================================== */
+html,body{
+  margin:0;
+  padding:0;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(180deg,#eaf4ff,#ffffff);
+  color:#1f4fa3;
+  overflow-x:hidden;
+  scroll-behavior:smooth;
+}
+
+section{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:70px 16px;
+  position:relative;
+}
+
+.hidden{opacity:0;pointer-events:none}
+.show{opacity:1;pointer-events:auto}
+
+/* =====================================================
+CARD
+===================================================== */
+.card-soft{
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+  border-radius:32px;
+  padding:40px;
+  max-width:560px;
+  width:100%;
+  box-shadow:0 30px 80px rgba(77,163,255,.25);
+  animation:enterUp 1s ease;
+}
+
+@keyframes enterUp{
+  from{opacity:0;transform:translateY(60px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* =====================================================
+BUTTON
+===================================================== */
+.btn-main{
+  border-radius:40px;
+  padding:14px 36px;
+  background:#4da3ff;
+  border:none;
+  color:white;
+  font-weight:500;
+}
+.btn-main:hover{background:#368fe8}
+
+/* =====================================================
+SNOOPY CHARACTER
+===================================================== */
+.snoopy{
+  width:180px;
+  animation:snoopyFloat 4s ease-in-out infinite;
+}
+@keyframes snoopyFloat{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-18px)}
+  100%{transform:translateY(0)}
+}
+
+/* =====================================================
+TEXT EFFECT
+===================================================== */
+.fade-line{
+  opacity:0;
+  animation:fadeLine .8s ease forwards;
+}
+.fade-line:nth-child(1){animation-delay:.3s}
+.fade-line:nth-child(2){animation-delay:.7s}
+.fade-line:nth-child(3){animation-delay:1.1s}
+
+@keyframes fadeLine{
+  to{opacity:1}
+}
+
+/* =====================================================
+LETTER
+===================================================== */
+.paper{
+  background:#fff;
+  border-radius:24px;
+  padding:36px;
+  box-shadow:0 20px 50px rgba(0,0,0,.12);
+}
+.typing{
+  white-space:pre-line;
+  overflow:hidden;
+  border-right:2px solid #1f4fa3;
+  width:0;
+  animation:typing 12s steps(500,end) forwards;
+}
+@keyframes typing{
+  to{width:100%}
+}
+
+/* =====================================================
+GAME
+===================================================== */
+.card-game{
+  width:90px;
+  height:90px;
+  border-radius:18px;
+  background:#e2efff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  cursor:pointer;
+  transition:.3s;
+  user-select:none;
+}
+.card-game.active{background:#4da3ff;color:#fff}
+.card-game.matched{background:#7bdcb5;color:#fff}
+
+/* =====================================================
+LOVE CANVAS
+===================================================== */
+#loveCanvas{
+  display:block;
+  width:100%;
+  height:100%;
+  position:absolute;
+  top:0;
+  left:0;
+  background:linear-gradient(180deg,#eaf4ff,#ffffff);
+  z-index:1;
+}
+#loveText{
+  position:absolute;
+  top:15%; /* naik sedikit ke atas */
+  width:100%;
+  text-align:center;
+  font-size:48px;
+  font-weight:700;
+  color:#ff5e81;
+  z-index:2;
+  text-shadow:0 2px 10px rgba(0,0,0,.2);
+}
+
+/* =====================================================
+NO BUTTON
+===================================================== */
+#noBtn{position:relative}
+</style>
+</head>
+
+<body>
+
+<audio id="song" loop>
+  <source src="bestpart.mp3" type="audio/mpeg">
+</audio>
+
+<!-- =====================================================
+STEP 1 – LANDING
+===================================================== -->
+<section id="step1">
+  <div class="card-soft text-center">
+    <img src="snoopy.png" class="snoopy" alt="Snoopy">
+    <h2 class="mt-3">Hi Ell.</h2>
+    <p>This page was built with intention.</p>
+    <button class="btn-main mt-3" onclick="startStory()">Start</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 2 – MUSIC
+===================================================== -->
+<section id="step2">
+  <div class="card-soft text-center">
+    <p class="fade-line">Some feelings arrive quietly.</p>
+    <p class="fade-line">Some stay longer than expected.</p>
+    <p class="fade-line"><i>Best Part.</i></p>
+    <button class="btn-main mt-4" onclick="go('step3')">Continue</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 3 – CONTEXT
+===================================================== -->
+<section id="step3">
+  <div class="card-soft">
+    <p>
+      This is not about rushing words.
+      <br><br>
+      This is about moments that feel calm,
+      even when nothing is said.
+    </p>
+    <button class="btn-main mt-4" onclick="go('game')">Next</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 4 – GAME
+===================================================== -->
+<section id="game">
+  <div class="card-soft text-center">
+    <h4>A Small Game</h4>
+    <p>Find all matching pairs.</p>
+    <div class="row g-3 justify-content-center mt-3" id="gameBoard"></div>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 5 – REWARD
+===================================================== -->
+<section id="reward">
+  <div class="card-soft text-center">
+    <h3 id="rewardText"></h3>
+    <img id="rewardImg" class="img-fluid rounded-4 mt-3">
+    <button class="btn-main mt-4" onclick="go('letter')">Continue</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 7 – LETTER
+===================================================== -->
+<section id="letter">
+  <div class="card-soft paper">
+    <div class="typing">
+Hey Ell,
+
+You asked for proof that I care about you.
+If love could be photographed, I’d have screenshotted it and sent it to you.
+ But love can’t be seen, only felt… and I hope you feel mine.
+
+I like you, Ell. I want to be with you.
+I don’t like people, but I love you, Ell.
+    </div>
+    <button class="btn-main mt-4" onclick="go('reasons')">Continue</button>
+  </div>
+</section>
+
+
+<!-- =====================================================
+STEP 6 – REASONS
+===================================================== -->
+<section id="reasons">
+  <div class="card-soft">
+    <h4>The reason you should accept me is simple</h4>
+    <ul>
+      <li>Good-looking, obviously.</li>
+      <li>I care about you, really.</li>
+      <li>Choi San vibes, not Bahlil.</li>
+      <li>Future President 2027.</li>
+    </ul>
+    <button class="btn-main mt-4" onclick="go('love')">Read This</button>
+  </div>
+</section>
+
+
+<!-- =====================================================
+STEP 8 – LOVE ANIMATION
+===================================================== -->
+<section id="love">
+  <canvas id="loveCanvas"></canvas>
+  <div id="loveText">For U</div>
+
+  <!-- Tombol Continue di bawah animasi LOVE -->
+  <div class="text-center" style="position:relative; z-index:2; margin-top:400px;">
+    <button class="btn-main mt-3" onclick="go('spotify')">Continue</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 9 – SPOTIFY
+===================================================== -->
+<section id="spotify">
+  <div class="card-soft text-center">
+    <p>These songs feel like you.</p>
+    <a href="https://open.spotify.com/playlist/3Zu0uaIR61InKb75bmhLJp?si=Xn2TIX-rRCyvhl4G6HnI7Q" target="_blank" class="btn btn-success">Open Spotify</a>
+    <button class="btn-main mt-3" onclick="go('final')">Continue</button>
+  </div>
+</section>
+
+<!-- =====================================================
+STEP 10 – FINAL
+===================================================== -->
+<section id="final">
+  <div class="card-soft text-center">
+    <img src="snoopy.png" class="snoopy" alt="Snoopy">
+    <h3 class="mt-3">So… can I be ur Boyfriend?</h3>
+    <button class="btn btn-success mt-3" onclick="alert('Happiness unlocked 🤍')">YES</button>
+    <button class="btn btn-danger mt-3" id="noBtn" onclick="moveNo()">NO</button>
+  </div>
+</section>
+
+<script>
+/* =====================================================
+MUSIC
+===================================================== */
+function startStory(){
+  const s=document.getElementById('song');
+  s.volume=.6;
+  s.play();
+  go('step2');
+}
+
+/* =====================================================
+NAV
+===================================================== */
+function go(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+/* =====================================================
+GAME LOGIC
+===================================================== */
+const icons=['💙','🤍','🐶','☁️','💙','🤍','🐶','☁️'];
+let first=null,lock=false,matched=0;
+const board=document.getElementById('gameBoard');
+
+icons.sort(()=>0.5-Math.random()).forEach(icon=>{
+  const el=document.createElement('div');
+  el.className='col-3 card-game';
+  el.textContent='?';
+  el.onclick=()=>{
+    if(lock||el.classList.contains('matched'))return;
+    el.textContent=icon;
+    el.classList.add('active');
+    if(!first){first=el;}
+    else{
+      lock=true;
+      if(first.textContent===el.textContent){
+        first.classList.add('matched');
+        el.classList.add('matched');
+        matched+=2;
+        if(matched===8)setTimeout(showReward,600);
+        reset();
+      }else{
+        setTimeout(()=>{
+          first.textContent='?';
+          el.textContent='?';
+          first.classList.remove('active');
+          el.classList.remove('active');
+          reset();
+        },900);
+      }
+    }
+  };
+  board.appendChild(el);
+});
+function reset(){first=null;lock=false}
+
+function showReward(){
+  const rewards=[
+    ['photo1.jpeg','Congratulations, you got me.'],
+    ['photo2.jpeg','Congratulations, you got Robux. Just kidding.'],
+    ['photo3.jpeg','Happy New Year from Bahlil.']
+  ];
+  const r=rewards[Math.floor(Math.random()*3)];
+  document.getElementById('rewardImg').src=r[0];
+  document.getElementById('rewardText').innerText=r[1];
+  go('reward');
+}
+
+/* =====================================================
+NO BUTTON
+===================================================== */
+function moveNo(){
+  const b=document.getElementById('noBtn');
+  b.style.position='absolute';
+  b.style.top=Math.random()*80+'%';
+  b.style.left=Math.random()*80+'%';
+}
+
+/* =====================================================
+LOVE HEARTS CANVAS
+===================================================== */
+function loveHearts(){
+  const canvas=document.getElementById('loveCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+
+  var settings = {
+    particles: {
+      length: 2000,
+      duration: 4,
+      velocity: 80,
+      effect: -1.3,
+      size: 8,
+    },
+  };
+
+  class Point {
+    constructor(x,y){this.x=x||0;this.y=y||0;}
+    clone(){return new Point(this.x,this.y);}
+    length(l){if(l===undefined){return Math.sqrt(this.x*this.x+this.y*this.y);}this.normalize();this.x*=l;this.y*=l;return this;}
+    normalize(){var len=this.length();this.x/=len;this.y/=len;return this;}
+  }
+
+  class Particle{
+    constructor(){this.position=new Point();this.velocity=new Point();this.acceleration=new Point();this.age=0;}
+    initialize(x,y,dx,dy){this.position.x=x;this.position.y=y;this.velocity.x=dx;this.velocity.y=dy;this.acceleration.x=dx*settings.particles.effect;this.acceleration.y=dy*settings.particles.effect;this.age=0;}
+    update(deltaTime){this.position.x+=this.velocity.x*deltaTime;this.position.y+=this.velocity.y*deltaTime;this.velocity.x+=this.acceleration.x*deltaTime;this.velocity.y+=this.acceleration.y*deltaTime;this.age+=deltaTime;}
+    draw(ctx,img){function ease(t){return --t*t*t+1;}var size=img.width*ease(this.age/settings.particles.duration);ctx.globalAlpha=1-this.age/settings.particles.duration;ctx.drawImage(img,this.position.x-size/2,this.position.y-size/2,size,size);}
+  }
+
+  class ParticlePool{
+    constructor(len){this.particles=new Array(len);this.firstActive=0;this.firstFree=0;this.duration=settings.particles.duration;for(let i=0;i<len;i++)this.particles[i]=new Particle();} 
+    add(x,y,dx,dy){this.particles[this.firstFree].initialize(x,y,dx,dy);this.firstFree++;if(this.firstFree==this.particles.length)this.firstFree=0;if(this.firstActive==this.firstFree)this.firstActive++;if(this.firstActive==this.particles.length)this.firstActive=0;}
+    update(deltaTime){
+      let i;if(this.firstActive<this.firstFree){for(i=this.firstActive;i<this.firstFree;i++)this.particles[i].update(deltaTime);}
+      if(this.firstFree<this.firstActive){for(i=this.firstActive;i<this.particles.length;i++)this.particles[i].update(deltaTime);for(i=0;i<this.firstFree;i++)this.particles[i].update(deltaTime);}
+      while(this.particles[this.firstActive].age>=this.duration&&this.firstActive!=this.firstFree){this.firstActive++;if(this.firstActive==this.particles.length)this.firstActive=0;}
+    }
+    draw(ctx,img){if(this.firstActive<this.firstFree){for(let i=this.firstActive;i<this.firstFree;i++)this.particles[i].draw(ctx,img);}
+      if(this.firstFree<this.firstActive){for(let i=this.firstActive;i<this.particles.length;i++)this.particles[i].draw(ctx,img);for(let i=0;i<this.firstFree;i++)this.particles[i].draw(ctx,img);}
+    }
+  }
+
+  const particles=new ParticlePool(settings.particles.length);
+  const particleRate=settings.particles.length/settings.particles.duration;
+
+  function pointOnHeart(t){return new Point(
+    160*Math.pow(Math.sin(t),3),
+    130*Math.cos(t)-50*Math.cos(2*t)-20*Math.cos(3*t)-10*Math.cos(4*t)+25
+  );}
+
+  const image=(function(){
+    const c=document.createElement('canvas');
+    const ctx=c.getContext('2d');
+    c.width=settings.particles.size; c.height=settings.particles.size;
+    function to(t){let p=pointOnHeart(t);p.x=settings.particles.size/2+(p.x*settings.particles.size)/350; p.y=settings.particles.size/2-(p.y*settings.particles.size)/350; return p;}
+    ctx.beginPath(); let t=-Math.PI; let p=to(t); ctx.moveTo(p.x,p.y); while(t<Math.PI){t+=0.01; p=to(t); ctx.lineTo(p.x,p.y);} ctx.closePath(); ctx.fillStyle="#ff5e81"; ctx.fill();
+    let img=new Image(); img.src=c.toDataURL(); return img;
+  })();
+
+  let time;
+  function render(){
+    requestAnimationFrame(render);
+    const newTime=new Date().getTime()/1000, deltaTime=newTime-(time||newTime);
+    time=newTime; ctx.clearRect(0,0,canvas.width,canvas.height);
+    const amount=particleRate*deltaTime;
+    for(let i=0;i<amount;i++){
+      const pos=pointOnHeart(Math.PI-2*Math.PI*Math.random());
+      const dir=pos.clone().length(settings.particles.velocity);
+      particles.add(canvas.width/2+pos.x, canvas.height/2-pos.y, dir.x, -dir.y);
+    }
+    particles.update(deltaTime); particles.draw(ctx,image);
+  }
+
+  function resize(){canvas.width=canvas.clientWidth; canvas.height=canvas.clientHeight;}
+  window.addEventListener('resize',resize);
+  resize(); render();
+}
+loveHearts();
+</script>
+
+</body>
+</html>
